@@ -36,6 +36,10 @@ _container_pull_attrs = {
     "repository": attr.string(mandatory = True),
     "digest": attr.string(),
     "tag": attr.string(default = "latest"),
+    "cacerts": attr.label(
+        allow_single_file = True,
+        mandatory = False,
+    ),
     "os": attr.string(default = "linux"),
     "os_version": attr.string(),
     "os_features": attr.string_list(),
@@ -98,6 +102,12 @@ exports_files(["digest"])
     # Use the custom docker client config directory if specified.
     if repository_ctx.attr.docker_client_config != "":
         args += ["--client-config-dir", "{}".format(repository_ctx.attr.docker_client_config)]
+
+    if repository_ctx.attr.cacerts:
+        args += [
+            "--cacert",
+            repository_ctx.path(repository_ctx.attr.cacerts),
+        ]
 
     # If a digest is specified, then pull by digest.  Otherwise, pull by tag.
     if repository_ctx.attr.digest:

@@ -114,12 +114,15 @@ def _impl(ctx):
         template = ctx.file._tag_tpl,
         substitutions = {
             "%{args}": " ".join(pusher_args),
+            "%{cacerts}": ( "--cacert " + ctx.file.cacerts.path ) \
+                 if ctx.file.cacerts else "",
             "%{container_pusher}": _get_runfile_path(ctx, ctx.executable._pusher),
         },
         output = ctx.outputs.executable,
         is_executable = True,
     )
     runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs)
+    runfiles = runfiles.merge([ctx.file.cacerts] if ctx.file.cacerts else [])
     runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)
 
     return [
@@ -167,6 +170,10 @@ container_push = rule(
         ),
         "stamp": attr.bool(
             default = False,
+            mandatory = False,
+        ),
+        "cacerts": attr.label(
+            allow_single_file = True,
             mandatory = False,
         ),
     }.items() + _layer_tools.items()),
