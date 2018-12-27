@@ -121,8 +121,10 @@ def _impl(ctx):
         output = ctx.outputs.executable,
         is_executable = True,
     )
-    runfiles = ctx.runfiles(files = [ctx.executable._pusher] + image_files + stamp_inputs)
-    runfiles = runfiles.merge([ctx.file.cacerts] if ctx.file.cacerts else [])
+    files = [ctx.executable._pusher] + image_files + stamp_inputs
+    if ctx.file.cacerts:
+        files += [ctx.file.cacerts]
+    runfiles = ctx.runfiles(files=files)
     runfiles = runfiles.merge(ctx.attr._pusher.default_runfiles)
 
     return [
